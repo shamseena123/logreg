@@ -9,69 +9,135 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool isHidden = true;
+
+  final _formKey = GlobalKey<FormState>();
+
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+
+  bool isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
         child: Padding(
           padding: EdgeInsets.all(30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 30),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 30),
 
-              Center(child: Icon(Icons.lock, size: 80, color: Colors.blue)),
+                Center(child: Icon(Icons.lock, size: 80, color: Colors.blue)),
 
-              SizedBox(height: 15),
+                SizedBox(height: 20),
 
-              CustomTextfield(label: "email"),
+                // EMAIL FIELD
+                CustomTextField(
+                  label: "email",
+                  controller: emailController,
 
-              SizedBox(height: 15),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Email is required";
+                    }
 
-              CustomTextfield(
-                label: "password",
-                obscureText: isHidden,
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    isHidden ? Icons.visibility : Icons.visibility_off,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isHidden = !isHidden;
-                    });
+                    if (!value.contains("@")) {
+                      return "Enter valid email";
+                    }
+
+                    return null;
                   },
                 ),
-              ),
 
-              SizedBox(height: 15),
+                SizedBox(height: 20),
 
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text("forget password"),
-                ),
-              ),
+                CustomTextField(
+                  label: "password",
+                  controller: passwordController,
+                  obscureText: isHidden,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return "Password is required";
+                    }
 
-              SizedBox(height: 15),
+                    if (value.length < 6) {
+                      return "Password must be minimum 6 characters";
+                    }
 
-              PrimaryButton(text: "Login", onPressed: () {}),
-
-              SizedBox(height: 15),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text("dont have an account"),
-                  TextButton(
+                    return null;
+                  },
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      isHidden ? Icons.visibility : Icons.visibility_off,
+                    ),
                     onPressed: () {
-                      Navigator.pushNamed(context, '/register');
+                      setState(() {
+                        isHidden = !isHidden;
+                      });
                     },
-                    child: Text("Register"),
                   ),
-                ],
-              ),
-            ],
+                ),
+
+                SizedBox(height: 10),
+
+                // FORGOT PASSWORD
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {},
+                    child: Text("Forgot Password"),
+                  ),
+                ),
+
+                SizedBox(height: 20),
+
+                // LOGIN BUTTON
+                isLoading
+                    ? Center(child: CircularProgressIndicator())
+                    : PrimaryButton(
+                        text: "Login",
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            setState(() {
+                              isLoading = true;
+                            });
+
+                            await Future.delayed(Duration(seconds: 2));
+
+                            setState(() {
+                              isLoading = false;
+                            });
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Login Successful")),
+                            );
+
+                            Navigator.pushNamed(context, '/register');
+                          }
+                        },
+                      ),
+
+                SizedBox(height: 20),
+
+                // REGISTER NAVIGATION
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("Don't have an account? "),
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/register');
+                      },
+                      child: Text("Register"),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
